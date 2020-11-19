@@ -10,13 +10,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.gzeinnumer.mylibsimplesqlite.helper.InterfaceDaoSQLite;
 import com.gzeinnumer.mylibsimplesqlite.struck.JoinColumn;
-import com.gzeinnumer.mylibsimplesqlite.struck.Table;
-import com.gzeinnumer.mylibsimplesqlite.typeData.Decimal;
-import com.gzeinnumer.mylibsimplesqlite.typeData.Int;
-import com.gzeinnumer.mylibsimplesqlite.typeData.PrimaryKey;
-import com.gzeinnumer.mylibsimplesqlite.typeData.Text;
-import com.gzeinnumer.mylibsimplesqlite.typeData.TimeStamp;
-import com.gzeinnumer.mylibsimplesqlite.typeData.Varchar;
+import com.gzeinnumer.mylibsimplesqlite.struck.SQLiteTable;
+import com.gzeinnumer.mylibsimplesqlite.typeData.DecimalTypeData;
+import com.gzeinnumer.mylibsimplesqlite.typeData.IntegerTypeData;
+import com.gzeinnumer.mylibsimplesqlite.typeData.PrimaryKeyTypeData;
+import com.gzeinnumer.mylibsimplesqlite.typeData.TextTypeData;
+import com.gzeinnumer.mylibsimplesqlite.typeData.TimeStampTypeData;
+import com.gzeinnumer.mylibsimplesqlite.typeData.VarcharTypeData;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -40,19 +40,22 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
         StringBuilder query = new StringBuilder("SELECT * FROM ");
 
         String tableName = "";
-        if (clss.isAnnotationPresent(Table.class)) {
-            Table table = clss.getAnnotation(Table.class);
-            if (table == null) {
-                logD("Annotation Table Not Found");
+        if (clss.isAnnotationPresent(SQLiteTable.class)) {
+            SQLiteTable SQLiteTable = clss.getAnnotation(SQLiteTable.class);
+            if (SQLiteTable == null) {
+                logD("countData: Annotation SQLiteTable Not Found");
                 return count;
             } else {
-                tableName = table.tableName();
+                tableName = SQLiteTable.tableName();
             }
+        } else {
+            logD("countData: Annotation SQLiteTable Not Found");
+            return count;
         }
         query.append(tableName);
 
         if (clss.getDeclaredFields().length == 0){
-            logD("Annotation Entity Not Found");
+            logD("countData: Annotation Entity Not Found");
             return count;
         }
 
@@ -87,50 +90,54 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
         StringBuilder query = new StringBuilder("SELECT ");
 
         String tableName = "";
-        if (clss.isAnnotationPresent(Table.class)) {
-            Table table = clss.getAnnotation(Table.class);
-            if (table == null) {
-                logD("Annotation Table Not Found");
+        if (clss.isAnnotationPresent(SQLiteTable.class)) {
+            SQLiteTable SQLiteTable = clss.getAnnotation(SQLiteTable.class);
+            if (SQLiteTable == null) {
+                logD("readData: Annotation SQLiteTable Not Found");
                 return list;
             } else {
-                tableName = table.tableName();
+                tableName = SQLiteTable.tableName();
             }
+        } else {
+            logD("countData: Annotation SQLiteTable Not Found");
+            return list;
         }
 
         if (clss.getDeclaredFields().length == 0){
-            logD("Annotation Entity Not Found");
+            logD("readData: Annotation Entity Not Found");
             return list;
         }
 
         String field = "";
         for (Field f : clss.getDeclaredFields()) {
-            PrimaryKey primaryKey = f.getAnnotation(PrimaryKey.class);
-            if (primaryKey != null) {
+            f.setAccessible(true);
+            PrimaryKeyTypeData primaryKeyTypeData = f.getAnnotation(PrimaryKeyTypeData.class);
+            if (primaryKeyTypeData != null) {
                 field = press(f.toString());
                 query.append(tableName).append(".").append(field);
             }
-            Int _int = f.getAnnotation(Int.class);
+            IntegerTypeData _int = f.getAnnotation(IntegerTypeData.class);
             if (_int != null) {
                 field = press(f.toString());
                 query.append(tableName).append(".").append(field);
             }
-            Varchar varchar = f.getAnnotation(Varchar.class);
-            if (varchar != null) {
+            VarcharTypeData varcharTypeData = f.getAnnotation(VarcharTypeData.class);
+            if (varcharTypeData != null) {
                 field = press(f.toString());
                 query.append(tableName).append(".").append(field);
             }
-            TimeStamp timestamp = f.getAnnotation(TimeStamp.class);
+            TimeStampTypeData timestamp = f.getAnnotation(TimeStampTypeData.class);
             if (timestamp != null) {
                 field = press(f.toString());
                 query.append(tableName).append(".").append(field);
             }
-            Decimal decimal = f.getAnnotation(Decimal.class);
-            if (decimal != null){
+            DecimalTypeData decimalTypeData = f.getAnnotation(DecimalTypeData.class);
+            if (decimalTypeData != null){
                 field = press(f.toString());
                 query.append(tableName).append(".").append(field);
             }
-            Text text = f.getAnnotation(Text.class);
-            if (text != null){
+            TextTypeData textTypeData = f.getAnnotation(TextTypeData.class);
+            if (textTypeData != null){
                 field = press(f.toString());
                 query.append(tableName).append(".").append(field);
             }
@@ -156,33 +163,34 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
             while (cursor.moveToNext()) {
                 HashMap<String, Object> hashMap = new HashMap<>();
                 for (Field f : clss.getDeclaredFields()) {
-                    PrimaryKey primaryKey = f.getAnnotation(PrimaryKey.class);
-                    if (primaryKey != null) {
+                    f.setAccessible(true);
+                    PrimaryKeyTypeData primaryKeyTypeData = f.getAnnotation(PrimaryKeyTypeData.class);
+                    if (primaryKeyTypeData != null) {
                         field = removeLast(press(f.toString()));
                         hashMap.put(field, cursor.getInt(cursor.getColumnIndex(field)));
                     }
-                    Int _int = f.getAnnotation(Int.class);
+                    IntegerTypeData _int = f.getAnnotation(IntegerTypeData.class);
                     if (_int != null) {
                         field = removeLast(press(f.toString()));
                         hashMap.put(field, cursor.getInt(cursor.getColumnIndex(field)));
                     }
-                    Varchar varchar = f.getAnnotation(Varchar.class);
-                    if (varchar != null) {
+                    VarcharTypeData varcharTypeData = f.getAnnotation(VarcharTypeData.class);
+                    if (varcharTypeData != null) {
                         field = removeLast(press(f.toString()));
                         hashMap.put(field, cursor.getString(cursor.getColumnIndex(field)));
                     }
-                    TimeStamp timestamp = f.getAnnotation(TimeStamp.class);
+                    TimeStampTypeData timestamp = f.getAnnotation(TimeStampTypeData.class);
                     if (timestamp != null) {
                         field = removeLast(press(f.toString()));
                         hashMap.put(field, cursor.getString(cursor.getColumnIndex(field)));
                     }
-                    Decimal decimal = f.getAnnotation(Decimal.class);
-                    if (decimal != null){
+                    DecimalTypeData decimalTypeData = f.getAnnotation(DecimalTypeData.class);
+                    if (decimalTypeData != null){
                         field = removeLast(press(f.toString()));
                         hashMap.put(field, cursor.getDouble(cursor.getColumnIndex(field)));
                     }
-                    Text text = f.getAnnotation(Text.class);
-                    if (text != null){
+                    TextTypeData textTypeData = f.getAnnotation(TextTypeData.class);
+                    if (textTypeData != null){
                         field = removeLast(press(f.toString()));
                         hashMap.put(field, cursor.getString(cursor.getColumnIndex(field)));
                     }
@@ -205,18 +213,21 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
 
         List<T> list = new ArrayList<>();
         String tableName = "";
-        if (clss.isAnnotationPresent(Table.class)) {
-            Table table = clss.getAnnotation(Table.class);
-            if (table == null) {
-                logD("Annotation Table Not Found");
+        if (clss.isAnnotationPresent(SQLiteTable.class)) {
+            SQLiteTable SQLiteTable = clss.getAnnotation(SQLiteTable.class);
+            if (SQLiteTable == null) {
+                logD("queryData: Annotation SQLiteTable Not Found");
                 return list;
             } else {
-                tableName = table.tableName();
+                tableName = SQLiteTable.tableName();
             }
+        } else {
+            logD("countData: Annotation SQLiteTable Not Found");
+            return list;
         }
 
         if (clss.getDeclaredFields().length == 0){
-            logD("Annotation Entity Not Found");
+            logD("queryData: Annotation Entity Not Found");
             return list;
         }
 
@@ -230,38 +241,39 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
             while (cursor.moveToNext()) {
                 HashMap<String, Object> hashMap = new HashMap<>();
                 for (Field f : clss.getDeclaredFields()) {
-                    PrimaryKey primaryKey = f.getAnnotation(PrimaryKey.class);
-                    if (primaryKey != null) {
+                    f.setAccessible(true);
+                    PrimaryKeyTypeData primaryKeyTypeData = f.getAnnotation(PrimaryKeyTypeData.class);
+                    if (primaryKeyTypeData != null) {
                         field = removeLast(press(f.toString()));
                         if (query.contains(field) || query.contains(tableName + ".*"))
                             hashMap.put(field, cursor.getInt(cursor.getColumnIndex(field)));
                     }
-                    Int _int = f.getAnnotation(Int.class);
+                    IntegerTypeData _int = f.getAnnotation(IntegerTypeData.class);
                     if (_int != null) {
                         field = removeLast(press(f.toString()));
                         if (query.contains(field) || query.contains(tableName + ".*"))
                             hashMap.put(field, cursor.getInt(cursor.getColumnIndex(field)));
                     }
-                    Varchar varchar = f.getAnnotation(Varchar.class);
-                    if (varchar != null) {
+                    VarcharTypeData varcharTypeData = f.getAnnotation(VarcharTypeData.class);
+                    if (varcharTypeData != null) {
                         field = removeLast(press(f.toString()));
                         if (query.contains(field) || query.contains(tableName + ".*"))
                             hashMap.put(field, cursor.getString(cursor.getColumnIndex(field)));
                     }
-                    TimeStamp timestamp = f.getAnnotation(TimeStamp.class);
+                    TimeStampTypeData timestamp = f.getAnnotation(TimeStampTypeData.class);
                     if (timestamp != null) {
                         field = removeLast(press(f.toString()));
                         if (query.contains(field) || query.contains(tableName + ".*"))
                             hashMap.put(field, cursor.getString(cursor.getColumnIndex(field)));
                     }
-                    Decimal decimal = f.getAnnotation(Decimal.class);
-                    if (decimal != null){
+                    DecimalTypeData decimalTypeData = f.getAnnotation(DecimalTypeData.class);
+                    if (decimalTypeData != null){
                         field = removeLast(press(f.toString()));
                         if (query.contains(field) || query.contains(tableName + ".*"))
                             hashMap.put(field, cursor.getDouble(cursor.getColumnIndex(field)));
                     }
-                    Text text = f.getAnnotation(Text.class);
-                    if (text != null){
+                    TextTypeData textTypeData = f.getAnnotation(TextTypeData.class);
+                    if (textTypeData != null){
                         field = removeLast(press(f.toString()));
                         if (query.contains(field) || query.contains(tableName + ".*"))
                             hashMap.put(field, cursor.getString(cursor.getColumnIndex(field)));
@@ -299,19 +311,22 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
         StringBuilder query = new StringBuilder("DELETE FROM ");
 
         String tableName = "";
-        if (clss.isAnnotationPresent(Table.class)) {
-            Table table = clss.getAnnotation(Table.class);
-            if (table == null){
-                logD("Annotation Table Not Found");
+        if (clss.isAnnotationPresent(SQLiteTable.class)) {
+            SQLiteTable SQLiteTable = clss.getAnnotation(SQLiteTable.class);
+            if (SQLiteTable == null){
+                logD("deleteData: Annotation SQLiteTable Not Found");
                 return false;
             } else {
-                tableName = table.tableName();
+                tableName = SQLiteTable.tableName();
             }
+        } else {
+            logD("countData: Annotation SQLiteTable Not Found");
+            return false;
         }
         query.append(tableName);
 
         if (clss.getDeclaredFields().length == 0){
-            logD("Annotation Entity Not Found");
+            logD("deleteData: Annotation Entity Not Found");
             return false;
         }
 
@@ -333,18 +348,21 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
     @Override
     public boolean insertData(Class<T> clss, SQLiteDatabase myDb, T data) {
         String tableName = "";
-        if (clss.isAnnotationPresent(Table.class)) {
-            Table table = clss.getAnnotation(Table.class);
-            if (table == null){
-                logD("Annotation Table Not Found");
+        if (clss.isAnnotationPresent(SQLiteTable.class)) {
+            SQLiteTable SQLiteTable = clss.getAnnotation(SQLiteTable.class);
+            if (SQLiteTable == null){
+                logD("insertData: Annotation SQLiteTable Not Found");
                 return false;
             } else {
-                tableName = table.tableName();
+                tableName = SQLiteTable.tableName();
             }
+        } else {
+            logD("countData: Annotation SQLiteTable Not Found");
+            return false;
         }
 
         if (clss.getDeclaredFields().length == 0){
-            logD("Annotation Entity Not Found");
+            logD("insertData: Annotation Entity Not Found");
             return false;
         }
 
@@ -353,18 +371,21 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
 
         String field = "";
         for (Field f : clss.getDeclaredFields()) {
-            PrimaryKey primaryKey = f.getAnnotation(PrimaryKey.class);
-            if (primaryKey != null) {
-                field = removeLast(press(f.toString()));
-                key.add(field);
-                try {
-                    value.add(String.valueOf(f.get(data)));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                    logD(e.getMessage());
+            f.setAccessible(true);
+            PrimaryKeyTypeData primaryKeyTypeData = f.getAnnotation(PrimaryKeyTypeData.class);
+            if (primaryKeyTypeData != null) {
+                if (!primaryKeyTypeData.autoGenerate()){
+                    field = removeLast(press(f.toString()));
+                    key.add(field);
+                    try {
+                        value.add(String.valueOf(f.get(data)));
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                        logD(e.getMessage());
+                    }
                 }
             }
-            Int _int = f.getAnnotation(Int.class);
+            IntegerTypeData _int = f.getAnnotation(IntegerTypeData.class);
             if (_int != null) {
                 field = removeLast(press(f.toString()));
                 key.add(field);
@@ -375,30 +396,8 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
                     logD(e.getMessage());
                 }
             }
-            Varchar varchar = f.getAnnotation(Varchar.class);
-            if (varchar != null) {
-                field = removeLast(press(f.toString()));
-                key.add(field);
-                try {
-                    value.add((String) f.get(data));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                    logD(e.getMessage());
-                }
-            }
-            TimeStamp timestamp = f.getAnnotation(TimeStamp.class);
-            if (timestamp != null) {
-                field = removeLast(press(f.toString()));
-                key.add(field);
-                try {
-                    value.add((String) f.get(data));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                    logD(e.getMessage());
-                }
-            }
-            Decimal decimal = f.getAnnotation(Decimal.class);
-            if (decimal != null){
+            VarcharTypeData varcharTypeData = f.getAnnotation(VarcharTypeData.class);
+            if (varcharTypeData != null) {
                 field = removeLast(press(f.toString()));
                 key.add(field);
                 try {
@@ -408,21 +407,40 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
                     logD(e.getMessage());
                 }
             }
-            Text text = f.getAnnotation(Text.class);
-            if (text != null){
+            TimeStampTypeData timestamp = f.getAnnotation(TimeStampTypeData.class);
+            if (timestamp != null) {
                 field = removeLast(press(f.toString()));
                 key.add(field);
                 try {
-                    value.add((String) f.get(data));
+                    value.add(String.valueOf(f.get(data)));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    logD(e.getMessage());
+                }
+            }
+            DecimalTypeData decimalTypeData = f.getAnnotation(DecimalTypeData.class);
+            if (decimalTypeData != null){
+                field = removeLast(press(f.toString()));
+                key.add(field);
+                try {
+                    value.add(String.valueOf(f.get(data)));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    logD(e.getMessage());
+                }
+            }
+            TextTypeData textTypeData = f.getAnnotation(TextTypeData.class);
+            if (textTypeData != null){
+                field = removeLast(press(f.toString()));
+                key.add(field);
+                try {
+                    value.add(String.valueOf(f.get(data)));
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                     logD(e.getMessage());
                 }
             }
         }
-
-        logD(String.valueOf(key.size()));
-        logD(String.valueOf(value.size()));
 
         try {
             ContentValues values = new ContentValues();
@@ -440,25 +458,29 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
 
     public boolean updatedData(Class<T> clss, SQLiteDatabase myDb, T data, String whereCondition) {
         String tableName = "";
-        if (clss.isAnnotationPresent(Table.class)) {
-            Table table = clss.getAnnotation(Table.class);
-            if (table == null){
-                logD("Annotation Table Not Found");
+        if (clss.isAnnotationPresent(SQLiteTable.class)) {
+            SQLiteTable SQLiteTable = clss.getAnnotation(SQLiteTable.class);
+            if (SQLiteTable == null){
+                logD("updatedData: Annotation SQLiteTable Not Found");
                 return false;
             } else {
-                tableName = table.tableName();
+                tableName = SQLiteTable.tableName();
             }
+        } else {
+            logD("countData: Annotation SQLiteTable Not Found");
+            return false;
         }
 
         if (clss.getDeclaredFields().length == 0){
-            logD("Annotation Entity Not Found");
+            logD("updatedData: Annotation Entity Not Found");
             return false;
         }
 
         List<String> value = new ArrayList<>();
         List<String> key = new ArrayList<>();String field = "";
         for (Field f : clss.getDeclaredFields()) {
-            Int _int = f.getAnnotation(Int.class);
+            f.setAccessible(true);
+            IntegerTypeData _int = f.getAnnotation(IntegerTypeData.class);
             if (_int != null) {
                 field = removeLast(press(f.toString()));
                 key.add(field);
@@ -469,30 +491,8 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
                     logD(e.getMessage());
                 }
             }
-            Varchar varchar = f.getAnnotation(Varchar.class);
-            if (varchar != null) {
-                field = removeLast(press(f.toString()));
-                key.add(field);
-                try {
-                    value.add((String) f.get(data));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                    logD(e.getMessage());
-                }
-            }
-            TimeStamp timestamp = f.getAnnotation(TimeStamp.class);
-            if (timestamp != null) {
-                field = removeLast(press(f.toString()));
-                key.add(field);
-                try {
-                    value.add((String) f.get(data));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                    logD(e.getMessage());
-                }
-            }
-            Decimal decimal = f.getAnnotation(Decimal.class);
-            if (decimal != null){
+            VarcharTypeData varcharTypeData = f.getAnnotation(VarcharTypeData.class);
+            if (varcharTypeData != null) {
                 field = removeLast(press(f.toString()));
                 key.add(field);
                 try {
@@ -502,12 +502,34 @@ public abstract class SQLiteLIB<T> implements InterfaceDaoSQLite<T> {
                     logD(e.getMessage());
                 }
             }
-            Text text = f.getAnnotation(Text.class);
-            if (text != null){
+            TimeStampTypeData timestamp = f.getAnnotation(TimeStampTypeData.class);
+            if (timestamp != null) {
                 field = removeLast(press(f.toString()));
                 key.add(field);
                 try {
-                    value.add((String) f.get(data));
+                    value.add(String.valueOf(f.get(data)));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    logD(e.getMessage());
+                }
+            }
+            DecimalTypeData decimalTypeData = f.getAnnotation(DecimalTypeData.class);
+            if (decimalTypeData != null){
+                field = removeLast(press(f.toString()));
+                key.add(field);
+                try {
+                    value.add(String.valueOf(f.get(data)));
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    logD(e.getMessage());
+                }
+            }
+            TextTypeData textTypeData = f.getAnnotation(TextTypeData.class);
+            if (textTypeData != null){
+                field = removeLast(press(f.toString()));
+                key.add(field);
+                try {
+                    value.add(String.valueOf(f.get(data)));
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                     logD(e.getMessage());

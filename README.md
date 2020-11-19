@@ -12,7 +12,7 @@
 </h1>
 
 <div align="center">
-    <a><img src="https://img.shields.io/badge/Version-1.0.0-brightgreen.svg?style=flat"></a>
+    <a><img src="https://img.shields.io/badge/Version-1.0.6-brightgreen.svg?style=flat"></a>
     <a><img src="https://img.shields.io/badge/ID-gzeinnumer-blue.svg?style=flat"></a>
     <a><img src="https://img.shields.io/badge/Java-Suport-green?logo=java&style=flat"></a>
     <a><img src="https://img.shields.io/badge/Koltin-Suport-green?logo=kotlin&style=flat"></a>
@@ -55,10 +55,14 @@ dependencies {
 - [x] [Count](#count)
 - [x] [Read](#read)
 - [x] [Query](#query) for Complex Query
+- [ ] Create Table
 
 ---
 
 ## Scenario Table
+|<img src="https://github.com/gzeinnumer/MyLibSimpleSQLite/blob/master/preview/example7.JPG" width="400"/>|<img src="https://github.com/gzeinnumer/MyLibSimpleSQLite/blob/master/preview/example8.JPG" width="400"/>|
+|---|---|
+
 <p align="center">
   <img src="https://github.com/gzeinnumer/MyLibSimpleSQLite/blob/master/preview/example5.JPG" width="400"/>
 </p>
@@ -93,11 +97,11 @@ public class GblVariabel {
 ```
 Here is my [DatabaseHelper](https://github.com/gzeinnumer/MyLibSimpleSQLite/blob/master/app/src/main/java/com/gzeinnumer/mylibsimplesqlite/helper/DatabaseHelper.java).
 
-Or you can use your own onfiguration, just make sure you have access to your `local database`.
+**Or you can use your own configuration to connect to Database, just make sure you have access to your `local database`. [ReadMore](https://developer.android.com/training/data-storage/sqlite?hl=id)**.
 
-You need to extends `SQLiteLIB<YourEntity>` to your `Entity`. And Use Annotation `@Table(tableName = "you_table_name")` like this:
+You need to extends `SQLiteLIB<YourEntity>` to your `Entity Class`. And Use Annotation `@SQLiteTable(tableName = "you_table_name")` like this:
 ```java
-@Table(tableName = "table1")
+@SQLiteTable(tableName = "table1")
 public class Table1 extends SQLiteLIB<Table1> {
 
     ...
@@ -128,38 +132,35 @@ private String table2_name;
 
 ```
 You can make it more simple with this `Annotation`
-- `@PrimaryKey` or `@Varchar` or `@Int` or `@TimeStamp` or `@Text` or `@Double` or `@JoinColumn`
+- `@PrimaryKeyTypeData` or `@VarcharTypeData` or `@IntegerTypeData` or `@TimeStampTypeData` or `@TextTypeData` or `@DoubleTypeData` or `@JoinColumnTypeData`
 > After
 ```java
-@PrimaryKey public int id;              // for Primary key
-@Varchar    public String name;         // for Varchar
-@Decimal    public double rating;       // for Decimal/Real
-@Text       public String desc;         // for String
-@Int        public int flag_active;     // for Integer
-@TimeStamp  public String created_at;   // for String
+@PrimaryKeyTypeData private int id;              // for Primary key
+@VarcharTypeData    private String name;         // for Varchar
+@DecimalTypeData    private double rating;       // for Decimal/Real
+@TextTypeData       private String desc;         // for String
+@IntegerTypeData    private int flag_active;     // for Integer
+@TimeStampTypeData  private String created_at;   // for String
 
 // for join column from other table
 //@JoinColumn(withTable = "table2", columnName = "name")
 @JoinColumn(withTable = "table2", columnName = "name", alias = "table2_name")
-public String table2_name;
+private String table2_name;
 ```
 **Notes :**
-- `**Variable must be PUBLIC**`
-  - Varible with this annotation must be public.
-- `@PrimaryKey` :
+- `@PrimaryKeyTypeData` :
   - Your variable type should `int`.
-- `@Varchar` :
+- `@VarcharTypeData` :
   - Your variable type should `String`.
-- `@Int` :
+- `@IntegerTypeData` :
   - Your variable type should `int`.
-- `@TimeStamp` :
+- `@TimeStampTypeData` :
   - Your variable type should `String`.
-- `@Text` :
+- `@TextTypeData` :
   - Your variable type should `String`.
-- `@Double` :
+- `@DoubleTypeData` :
   - Your variable type should `double`.
-- `@JoinColumn` :
-  - **Only Support STRING**
+- `@JoinColumnTypeData` :
   - `withTable` = other table to join with current table.
   - `columnName` = realname on other table.
   - `alias` = if your `first table` and `second table` haven't same `column name`. you can ignore it.
@@ -220,8 +221,8 @@ public boolean update(Table_1 data){
 ```java
 //no need to write WHERE, i will write it for you, just type your condition
 public boolean update(Table1 data) {
-    String condition = "id='1'";                            //for single condition
-    //String condition = "id='1' AND flag_Active='1'";      //for multi condition
+    String condition = "id='500'";                            //for single condition
+    //String condition = "id='500' AND flag_Active='1'";      //for multi condition
     return updatedData(Table1.class, GblVariabel.myDb, data, condition);  // return true/false
 }
 ```
@@ -246,8 +247,8 @@ public boolean delete(){
 ```java
 //no need to write WHERE, i will write it for you, just type your condition
 public boolean delete() {
-    String condition = "id='1'";                        //for single condition
-    //String condition = "id='1' AND flag_Active='1'";    //for multi condition
+    String condition = "id='1=500'";                        //for single condition
+    //String condition = "id='500' AND flag_Active='1'";    //for multi condition
     return deleteData(Table1.class, GblVariabel.myDb, condition);
 }
 ```
@@ -277,7 +278,8 @@ public int count() {
 
 //type 2 no need to write WHERE, i will write it for you, just type your condition
 public int count() {
-    String condition = "id='1'";
+    String condition = "id='500'";                        //for single condition
+    //String condition = "id='500' AND flag_Active='1'";    //for multi condition
     return countData(Table1.class, GblVariabel.myDb, condition);
 }
 ```
@@ -315,8 +317,8 @@ public int count() {
 
 //type 2 no need to write WHERE, i will write it for you, just type your condition
 public int count() {
-    String condition = "id='1'";                        //for single condition
-    String condition = "id='1' AND flag_Active='1'";    //for multi condition
+    String condition = "id='500'";                        //for single condition
+    //String condition = "id='500' AND flag_Active='1'";    //for multi condition
 
     return readData(Table_1.class, GblVariabel.myDb, condition);
 }
@@ -352,7 +354,7 @@ public List<Table_1> query(){
 ```java
 //dont forget to write this to
 @JoinColumn(withTable = "table2", columnName = "name", alias = "table2_name")
-public String table2_name;
+private String table2_name;
 
 public List<Table1> query(){
     String query ="SELECT table1.*, table2.name AS table2_name FROM table1 JOIN table2 ON table2.id_table1 = table1.id;";
@@ -376,9 +378,22 @@ Entity New Verion
 
 ---
 
+## Debug
+<p align="center">
+  <img src="https://github.com/gzeinnumer/MyLibSimpleSQLite/blob/master/preview/example6.JPG" width="400"/>
+</p>
+
+---
+
+**Example App [Java](https://github.com/gzeinnumer/MyLibSQLiteExample) & [Kotlin](https://github.com/gzeinnumer/MyLibSimpleSQLitekt)**
+
+---
+
 ## Version
 - **1.0.0**
   - First Release
+- **1.0.6**
+  - Kotlin Version
 
 ---
 
